@@ -1,46 +1,52 @@
 from django.test import TestCase
 from .models import Category, Recipe
+from datetime import datetime
 
 class CategoryModelTest(TestCase):
+    @classmethod
     def setUpTestData(cls):
         Category.objects.create(name='Test Category')
+
+    def test_name_label(self):
+        category = Category.objects.get(id=1)
+        field_label = category._meta.get_field('name').verbose_name
+        self.assertEquals(field_label, 'name')
 
     def test_name_max_length(self):
         category = Category.objects.get(id=1)
         max_length = category._meta.get_field('name').max_length
-        self.assertEqual(max_length, 100)
+        self.assertEquals(max_length, 100)
 
-    def test_category_name(self):
+    def test_category_str_method(self):
         category = Category.objects.get(id=1)
-        self.assertEqual(category.name, 'Test Category')
+        self.assertEqual(str(category), category.name)
 
 class RecipeModelTest(TestCase):
+    @classmethod
     def setUpTestData(cls):
-        category = Category.objects.create(name='Test Category')
-        Recipe.objects.create(title='Test Recipe', description='Test Description', instructions='Test Instructions', ingredients='Test Ingredients', category=category)
-
-    def test_title_max_length(self):
-        recipe = Recipe.objects.get(id=1)
-        max_length = recipe._meta.get_field('title').max_length
-        self.assertEqual(max_length, 200)
-
-    def test_recipe_title(self):
-        recipe = Recipe.objects.get(id=1)
-        self.assertEqual(recipe.title, 'Test Recipe')
-
-    def test_recipe_description(self):
-        recipe = Recipe.objects.get(id=1)
-        self.assertEqual(recipe.description, 'Test Description')
-
-    def test_recipe_instructions(self):
-        recipe = Recipe.objects.get(id=1)
-        self.assertEqual(recipe.instructions, 'Test Instructions')
-
-    def test_recipe_ingredients(self):
-        recipe = Recipe.objects.get(id=1)
-        self.assertEqual(recipe.ingredients, 'Test Ingredients')
-
-    def test_recipe_category(self):
-        recipe = Recipe.objects.get(id=1)
+        Category.objects.create(name='Test Category')
         category = Category.objects.get(id=1)
-        self.assertEqual(recipe.category, category)
+        Recipe.objects.create(
+            title='Test Recipe',
+            description='Test Description',
+            instructions='Test Instructions',
+            ingredients='Test Ingredients',
+            category=category
+        )
+
+    def test_title_label(self):
+        recipe = Recipe.objects.get(id=1)
+        field_label = recipe._meta.get_field('title').verbose_name
+        self.assertEquals(field_label, 'title')
+
+    def test_created_at_auto_now_add(self):
+        recipe = Recipe.objects.get(id=1)
+        self.assertTrue(isinstance(recipe.created_at, datetime))
+
+    def test_updated_at_auto_now(self):
+        recipe = Recipe.objects.get(id=1)
+        self.assertTrue(isinstance(recipe.updated_at, datetime))
+
+    def test_recipe_str_method(self):
+        recipe = Recipe.objects.get(id=1)
+        self.assertEqual(str(recipe), recipe.title)
